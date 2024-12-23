@@ -24,6 +24,8 @@ class GameScene: SKScene {
     var colorSwitch: SKSpriteNode! // The rotating color circle
     var switchState = SwitchState.red
     var currentColorIndex: Int?
+    let scoreLabel = SKLabelNode(text: "0")
+    var score = 0
     
     override func didMove(to view: SKView) {
         // Setup the physics world properties
@@ -36,7 +38,7 @@ class GameScene: SKScene {
     /// Configures the physics world properties
     func setupPhysics() {
         // Set gravity to pull objects downward slightly
-        physicsWorld.gravity = CGVector(dx: 0.0, dy: -2.0)
+        physicsWorld.gravity = CGVector(dx: 0.0, dy: -1.0)
         physicsWorld.contactDelegate = self
     }
     
@@ -49,6 +51,7 @@ class GameScene: SKScene {
         colorSwitch = SKSpriteNode(imageNamed: "ColorCircle")
         colorSwitch.size = CGSize(width: frame.size.width / 3, height: frame.size.width / 3)
         colorSwitch.position = CGPoint(x: frame.midX, y: frame.minY + colorSwitch.size.height)
+        colorSwitch.zPosition = ZPositions.colorSwitch
         
         // Add a physics body to the color switch (static, does not move)
         colorSwitch.physicsBody = SKPhysicsBody(circleOfRadius: colorSwitch.size.width / 2)
@@ -58,8 +61,19 @@ class GameScene: SKScene {
         // Add the ColorSwitch to the scene
         addChild(colorSwitch)
         
+        scoreLabel.fontName = "AvenireNext-Bold"
+        scoreLabel.fontSize = 60.0
+        scoreLabel.fontColor = UIColor.white
+        scoreLabel.position = CGPoint(x: frame.midX, y: frame.midY)
+        scoreLabel.zPosition = ZPositions.label
+        addChild(scoreLabel)
+        
         // Spawn a ball in the scene
         spwanBall()
+    }
+    
+    func updateScoreLabel(){
+        scoreLabel.text = "\(score)"
     }
     
     /// Spawns a ball at the top of the screen
@@ -69,6 +83,7 @@ class GameScene: SKScene {
         ball.colorBlendFactor = 1.0
         ball.name = "Ball"
         ball.position = CGPoint(x: frame.midX, y: frame.maxY) // Spawn at the top center of the screen
+        ball.zPosition = ZPositions.ball
         // Add a physics body to the ball
         ball.physicsBody = SKPhysicsBody(circleOfRadius: ball.size.width / 2)
         ball.physicsBody?.categoryBitMask = PhysicsCategories.ballCategory // Set its category
@@ -102,7 +117,8 @@ extension GameScene: SKPhysicsContactDelegate{
         if contactMask == PhysicsCategories.ballCategory | PhysicsCategories.switchCategory{
             if let ball = contact.bodyA.node?.name == "Ball" ? contact.bodyA.node as? SKSpriteNode : contact.bodyB.node as? SKSpriteNode{
                 if currentColorIndex == switchState.rawValue{
-                    print("Correct!")
+                    score += 1
+                    updateScoreLabel()
                     ball.run(SKAction.fadeIn(withDuration: 0.25)) {
                         ball.removeFromParent()
                         self.spwanBall()
