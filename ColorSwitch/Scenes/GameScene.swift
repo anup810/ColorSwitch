@@ -102,7 +102,15 @@ class GameScene: SKScene {
         colorSwitch.run(SKAction.rotate(byAngle: .pi/2, duration: 0.25))
     }
     func gameOver(){
-        print("Game Over")
+        // save the score of the user
+        UserDefaults.standard.set(score, forKey: "Recentscore")
+        if score > UserDefaults.standard.integer(forKey: "Highscore"){
+            UserDefaults.standard.set(score, forKey: "Highscore")
+        }
+        
+        //when game is over redirect to menu screen
+        let menuScene = MenuScene(size: view!.bounds.size)
+        view?.presentScene(menuScene)
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
